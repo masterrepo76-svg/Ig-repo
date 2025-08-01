@@ -1,72 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VENOM Downloader</title>
-    <link rel="icon" href="https://em-content.zobj.net/source/microsoft-teams/363/smiling-face-with-horns_1f608.png" />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', sans-serif;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Instagram Downloader - VENOM</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      margin: 0;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    #container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    #pasteArea {
+      margin-top: 30px;
+    }
+
+    input[type="text"] {
+      width: 90%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #00ff99;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #00dd77;
+    }
+
+    #preview {
+      margin-top: 30px;
+      display: none;
+    }
+
+    #preview video, #preview img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    #formats {
+      margin-top: 10px;
+      display: none;
+    }
+
+    #formats button {
+      margin: 5px;
+      background: #222;
+      color: #0f0;
+      border: 1px solid #0f0;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>🎥 VENOM Insta Downloader</h1>
+    <div id="pasteArea">
+      <input type="text" id="igLink" placeholder="Paste Instagram link here..." />
+      <button onclick="handleLink()">Fetch</button>
+    </div>
+
+    <div id="status">Waiting for Instagram link...</div>
+
+    <div id="preview">
+      <video id="videoPreview" controls></video>
+      <img id="imgPreview" style="display:none;" />
+      <button onclick="showFormats()">Download</button>
+    </div>
+
+    <div id="formats">
+      <button onclick="downloadVideo('4k')">Download 4K</button>
+      <button onclick="downloadVideo('hd')">Download HD</button>
+      <button onclick="downloadVideo('sd')">Download SD</button>
+    </div>
+  </div>
+
+  <script>
+    let videoURL = "";
+
+    async function handleLink() {
+      const input = document.getElementById("igLink");
+      const link = input.value.trim();
+      const status = document.getElementById("status");
+      const preview = document.getElementById("preview");
+      const video = document.getElementById("videoPreview");
+      const img = document.getElementById("imgPreview");
+
+      if (!link) {
+        status.textContent = "❌ Please enter a valid Instagram link.";
+        return;
       }
 
-      body {
-        background: radial-gradient(ellipse at center, #000000 0%, #0a0a0a 100%);
-        color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 40px 20px;
-        text-align: center;
-        min-height: 100vh;
-      }
+      // Hide paste input after pasting
+      document.getElementById("pasteArea").style.display = "none";
+      status.textContent = "⏳ Fetching content...";
 
-      h1 {
-        font-size: 2.6rem;
-        margin-bottom: 10px;
-        background: linear-gradient(to right, #ff0057, #9900ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: pulseText 1.5s infinite alternate;
-      }
+      const encodedLink = encodeURIComponent(link);
+      const apiURL = `https://api.giftedtech.co.ke/api/download/instadl?apikey=gifted&url=${encodedLink}`;
 
-      @keyframes pulseText {
-        0% {
-          text-shadow: 0 0 5px #ff00cc;
+      try {
+        const res = await fetch(apiURL);
+        const data = await res.json();
+
+        if (data && data.url) {
+          videoURL = data.url;
+          if (videoURL.includes(".mp4")) {
+            video.src = videoURL;
+            video.style.display = "block";
+            img.style.display = "none";
+          } else {
+            img.src = videoURL;
+            img.style.display = "block";
+            video.style.display = "none";
+          }
+          preview.style.display = "block";
+          status.textContent = "✅ Preview ready. You can now download.";
+        } else {
+          status.textContent = "⚠️ No media found.";
         }
-        100% {
-          text-shadow: 0 0 20px #ff00cc;
-        }
+      } catch (err) {
+        status.textContent = "❌ Error fetching video.";
       }
+    }
 
-      .venom-logo {
-        width: 100px;
-        animation: spin 6s linear infinite;
-        margin-bottom: 20px;
-      }
+    function showFormats() {
+      document.getElementById("formats").style.display = "block";
+    }
 
-      @keyframes spin {
-        0% { transform: rotateY(0deg); }
-        100% { transform: rotateY(360deg); }
-      }
-
-      input {
-        width: 100%;
-        max-width: 500px;
-        padding: 12px 16px;
-        font-size: 1rem;
-        border: 2px solid #444;
-        border-radius: 8px;
-        margin: 20px 0;
-        outline: none;
-        background: #121212;
-        color: white;
-      }
-
-      .buttons {
+    function downloadVideo(quality) {
+      if (!videoURL) return alert("No video available.");
+      const a = document.createElement("a");
+      a.href = videoURL;
+      a.download = `insta-video-${quality}.mp4`;
+      a.click();
+    }
+  </script>
+</body>
+</html>      .buttons {
         display: flex;
         gap: 15px;
         flex-wrap: wrap;
